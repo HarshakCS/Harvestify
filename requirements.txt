@@ -9,9 +9,9 @@ gunicorn
 markupsafe
 
 # Deep Learning (Platform Agnostic)
-torch
-torchvision
-torchaudio
+# torch
+# torchvision
+# torchaudio
 
 # Image Processing
 Pillow
@@ -25,5 +25,5 @@ joblib
 # Additional Utilities
 python-dotenv
 huggingface_hub
-tensorflow
+# tensorflow
 flask-cors
