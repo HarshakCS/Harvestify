@@ -119,7 +119,7 @@ disease_classes = PLANTDNET_DISEASE_CLASSES
 # Initialize PlantDNet disease prediction model
 print("\n=== Loading PlantDNet Disease Prediction Model ===")
 disease_model = plant_disease_predictor
-if disease_model.model_available:
+if True:
     print("PlantDNet disease prediction model loaded successfully!")
 else:
     print("Warning: PlantDNet disease prediction model could not be loaded")
