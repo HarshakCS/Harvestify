@@ -1,0 +1,232 @@
+{% extends 'layout.html' %} 
+{% block body %}
+<style>
+  html body {
+    background-color: #f8f9fa;
+  }
+  .upload-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  .preview-container {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .preview-image {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+  }
+  .result-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border-left: 4px solid #28a745;
+  }
+  .disease-name {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .plant-name {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .confidence-badge {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .disease-info {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-top: 1rem;
+  }
+  .error-message {
+    color: #dc3545;
+    margin: 1rem 0;
+    font-weight: 500;
+  }
+  .btn-upload {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .btn-upload:hover {
+    background-color: #218838;
+  }
+  .file-input-label {
+    display: block;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+</style>
+
+<div class="container py-5">
+  <h2 class="text-center mb-4">
+    <b>Plant Disease Detection</b>
+  </h2>
+  
+  <div class="upload-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form class="form-signin" method="post" enctype="multipart/form-data">
+      <h4 class="mb-4 text-center">Upload a Clear Photo of the Affected Plant</h4>
+      
+      <div class="form-group text-center">
+        <label for="plantImage" class="file-input-label">
+          <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: #28a745;"></i>
+          <p>Click to select an image or drag and drop</p>
+          <input type="file" 
+                 name="file" 
+                 class="d-none" 
+                 id="plantImage" 
+                 accept=".jpg,.jpeg,.png"
+                 onchange="preview_image(event)" 
+                 required>
+        </div>
+        <small class="form-text text-muted">Supported formats: JPG, JPEG, PNG</small>
+      </div>
+      
+      <div class="text-center">
+        <img id="output-image" class="img-fluid rounded preview-image" alt="Preview" style="display: none; max-height: 300px;"/>
+      </div>
+      
+      <button class="btn btn-success btn-block mt-3" type="submit">
+        <i class="fas fa-search"></i> Predict Disease
+      </button>
+    </form>
+    
+    {% if prediction %}
+    <div class="result-card mt-4">
+      <div class="disease-name">
+        <i class="fas fa-disease"></i> {{ disease }}
+      </div>
+      <div class="plant-name">
+        <i class="fas fa-leaf"></i> Plant: {{ plant }}
+      </div>
+      <span class="badge badge-pill badge-success confidence-badge">
+        <i class="fas fa-chart-line"></i> Confidence: {{ confidence }}
+      </span>
+      
+      {% if img_path %}
+      <div class="text-center mt-3">
+        <img src="{{ url_for('static', filename=img_path) }}" 
+             alt="Uploaded plant" 
+             class="img-fluid rounded shadow" 
+             style="max-height: 300px;">
+      </div>
+      {% endif %}
+      
+      <div class="disease-info mt-3">
+        <h5><i class="fas fa-info-circle"></i> About this condition:</h5>
+        <p class="mb-0">{{ disease_info }}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function preview_image(event) {
+  const fileInput = event.target;
+  const file = fileInput.files[0];
+  const preview = document.getElementById('output-image');
+  
+  // Update the file label
+  const fileLabel = fileInput.nextElementSibling;
+  fileLabel.textContent = file ? file.name : 'Choose image file';
+  
+  // Show/hide preview
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    reader.readAsDataURL(file);
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+// Initialize the file input label
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('plantImage');
+  if (fileInput) {
+    fileInput.addEventListener('change', preview_image);
+  }
+  
+  // Handle drag and drop
+  const dropArea = document.querySelector('.upload-container');
+  
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+  });
+  
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+  });
+  
+  function highlight() {
+    dropArea.style.border = '2px dashed #28a745';
+    dropArea.style.backgroundColor = 'rgba(40, 167, 69, 0.05)';
+  }
+  
+  function unhighlight() {
+    dropArea.style.border = '';
+    dropArea.style.backgroundColor = '';
+  }
+  
+  dropArea.addEventListener('drop', handleDrop, false);
+  
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    const input = document.getElementById('plantImage');
+    
+    if (files.length) {
+      input.files = files;
+      const event = new Event('change');
+      input.dispatchEvent(event);
+    }
+  }
+});
+</script>
+
+</div>
+{% endblock %}

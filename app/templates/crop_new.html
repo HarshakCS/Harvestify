@@ -1,0 +1,204 @@
+{% extends 'layout.html' %}
+
+{% block title %}Crop Recommendation - Harvestify{% endblock %}
+
+{% block body %}
+{{ super() }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Crop Recommendation System</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Enter the soil and weather conditions to get the best crop recommendations for your farm.</p>
+                    
+                    <form id="cropPredictionForm" method="POST" action="{{ url_for('routes.crop') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nitrogen">Nitrogen (N) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="nitrogen" name="nitrogen" 
+                                           placeholder="Enter nitrogen value" step="0.01" min="0" required>
+                                    <small class="form-text text-muted">Nitrogen content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phosphorous">Phosphorous (P) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="phosphorous" name="phosphorous" 
+                                           placeholder="Enter phosphorous value" step="0.01" min="0" required>
+                                    <small class="form-text text-muted">Phosphorous content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="potassium">Potassium (K) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="potassium" name="potassium" 
+                                           placeholder="Enter potassium value" step="0.01" min="0" required>
+                                    <small class="form-text text-muted">Potassium content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="temperature">Temperature (°C) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="temperature" name="temperature" 
+                                           placeholder="Enter temperature" step="0.1" required>
+                                    <small class="form-text text-muted">Average temperature in Celsius</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="humidity">Humidity (%) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="humidity" name="humidity" 
+                                           placeholder="Enter humidity percentage" step="0.1" min="0" max="100" required>
+                                    <small class="form-text text-muted">Relative humidity percentage</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="ph">Soil pH <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="ph" name="ph" 
+                                           placeholder="Enter pH value" step="0.1" min="0" max="14" required>
+                                    <small class="form-text text-muted">Soil pH level (0-14)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="rainfall">Rainfall (mm) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="rainfall" name="rainfall" 
+                                           placeholder="Enter rainfall in mm" step="0.01" min="0" required>
+                                    <small class="form-text text-muted">Annual rainfall in millimeters</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-seedling me-2"></i>Get Crop Recommendations
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Recommendation Result -->
+                    <div id="recommendationResult" class="mt-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Recommended Crops</h5>
+                            <div id="cropRecommendations">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    // Form submission handler
+    $('#cropPredictionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Send AJAX request
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Display results
+                displayRecommendations(response);
+                
+                // Scroll to results
+                $('html, body').animate({
+                    scrollTop: $('#recommendationResult').offset().top - 100
+                }, 500);
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function() {
+                // Reset button state
+                submitBtn.prop('disabled', false).html(originalBtnText);
+            }
+        });
+    });
+    
+    // Function to display recommendations
+    function displayRecommendations(data) {
+        const resultDiv = $('#recommendationResult');
+        const recommendationsDiv = $('#cropRecommendations');
+        
+        // Clear previous results
+        recommendationsDiv.empty();
+        
+        if (data.recommendations && data.recommendations.length > 0) {
+            // Create a list of recommendations
+            const list = $('<ul class="list-group"></ul>');
+            
+            data.recommendations.forEach((crop, index) => {
+                const confidence = (crop.confidence * 100).toFixed(2);
+                const listItem = $(`
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="${crop.image_path}" 
+                                 alt="${crop.name}" 
+                                 class="img-thumbnail me-3" 
+                                 style="width: 80px; height: 60px; object-fit: cover;"
+                                 onerror="this.src='/static/images/crop_background.jpg'">
+                            <div>
+                                <h6 class="mb-1">${crop.name.charAt(0).toUpperCase() + crop.name.slice(1)}</h6>
+                                <small class="text-muted">Confidence: ${confidence}%</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-success rounded-pill">#${index + 1}</span>
+                    </li>
+                `);
+                list.append(listItem);
+            });
+            
+            recommendationsDiv.append(list);
+            
+            // Show additional information if available
+            if (data.message) {
+                recommendationsDiv.append(`<p class="mt-3">${data.message}</p>`);
+            }
+            
+            // Show the result section
+            resultDiv.slideDown();
+        } else {
+            recommendationsDiv.html('<p>No specific recommendations available based on the provided data.</p>');
+            resultDiv.slideDown();
+        }
+    }
+});
+</script>
+{% endblock %}

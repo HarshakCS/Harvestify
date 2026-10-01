@@ -1,0 +1,225 @@
+{% extends 'layout.html' %}
+
+{% block title %}Fertilizer Recommendation - Harvestify{% endblock %}
+
+{% block body %}
+{{ super() }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Fertilizer Recommendation System</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Enter the soil and crop details to get the best fertilizer recommendations for your farm.</p>
+                    
+                    <form id="fertilizerForm" method="POST" action="{{ url_for('routes.fertilizer_recommendation') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="temperature">Temperature (°C) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="temperature" name="temperature" 
+                                           placeholder="Enter temperature" step="0.1" required>
+                                    <small class="form-text text-muted">Current temperature in Celsius</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="humidity">Humidity (%) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="humidity" name="humidity" 
+                                           placeholder="Enter humidity percentage" step="0.1" min="0" max="100" required>
+                                    <small class="form-text text-muted">Relative humidity percentage</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="soil_type">Soil Type <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="soil_type" name="soil_type" required>
+                                        <option value="">Select Soil Type</option>
+                                        <option value="Sandy">Sandy</option>
+                                        <option value="Loamy">Loamy</option>
+                                        <option value="Black">Black</option>
+                                        <option value="Red">Red</option>
+                                        <option value="Clayey">Clayey</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="crop_type">Crop Type <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="crop_type" name="crop_type" required>
+                                        <option value="">Select Crop Type</option>
+                                        <option value="Maize">Maize</option>
+                                        <option value="Sugarcane">Sugarcane</option>
+                                        <option value="Cotton">Cotton</option>
+                                        <option value="Tobacco">Tobacco</option>
+                                        <option value="Paddy">Paddy</option>
+                                        <option value="Barley">Barley</option>
+                                        <option value="Wheat">Wheat</option>
+                                        <option value="Millets">Millets</option>
+                                        <option value="Oil seeds">Oil seeds</option>
+                                        <option value="Pulses">Pulses</option>
+                                        <option value="Ground Nuts">Ground Nuts</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nitrogen">Nitrogen (N) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="nitrogen" name="nitrogen" 
+                                           placeholder="Enter nitrogen value" step="0.1" min="0" required>
+                                    <small class="form-text text-muted">Nitrogen content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="potassium">Potassium (K) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="potassium" name="potassium" 
+                                           placeholder="Enter potassium value" step="0.1" min="0" required>
+                                    <small class="form-text text-muted">Potassium content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phosphorous">Phosphorous (P) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="phosphorous" name="phosphorous" 
+                                           placeholder="Enter phosphorous value" step="0.1" min="0" required>
+                                    <small class="form-text text-muted">Phosphorous content in soil (kg/ha)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="ph">Soil pH <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="ph" name="ph" 
+                                           placeholder="Enter pH value" step="0.1" min="0" max="14" required>
+                                    <small class="form-text text-muted">Soil pH level (0-14)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-flask me-2"></i>Get Fertilizer Recommendation
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Recommendation Result -->
+                    <div id="recommendationResult" class="mt-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Recommended Fertilizer</h5>
+                            <div id="fertilizerRecommendation">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    // Form submission handler
+    $('#fertilizerForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+        
+        // Get form data
+        const formData = $(this).serialize();
+        
+        // Send AJAX request
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                // Display results
+                displayRecommendation(response);
+                
+                // Scroll to results
+                $('html, body').animate({
+                    scrollTop: $('#recommendationResult').offset().top - 100
+                }, 500);
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function() {
+                // Reset button state
+                submitBtn.prop('disabled', false).html(originalBtnText);
+            }
+        });
+    });
+    
+    // Function to display recommendation
+    function displayRecommendation(data) {
+        const resultDiv = $('#recommendationResult');
+        const recommendationDiv = $('#fertilizerRecommendation');
+        
+        // Clear previous results
+        recommendationDiv.empty();
+        
+        if (data.fertilizer) {
+            // Display the recommended fertilizer with details
+            const recommendation = `
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-flask fa-3x text-success"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">${data.fertilizer.name}</h4>
+                        <p class="mb-1"><strong>Type:</strong> ${data.fertilizer.type || 'N/A'}</p>
+                        <p class="mb-1"><strong>NPK Ratio:</strong> ${data.fertilizer.npk_ratio || 'N/A'}</p>
+                        <p class="mb-1"><strong>Confidence:</strong> ${(data.confidence * 100).toFixed(2)}%</p>
+                    </div>
+                </div>
+            `;
+            
+            recommendationDiv.html(recommendation);
+            
+            // Show additional information if available
+            if (data.instructions) {
+                const instructions = `
+                    <div class="mt-3">
+                        <h6>Application Instructions:</h6>
+                        <ul class="mb-0">
+                            ${data.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                recommendationDiv.append(instructions);
+            }
+            
+            // Show the result section
+            resultDiv.slideDown();
+        } else {
+            recommendationDiv.html('<p>No specific recommendation available based on the provided data.</p>');
+            resultDiv.slideDown();
+        }
+    }
+});
+</script>
+{% endblock %}

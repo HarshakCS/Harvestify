@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment / secrets
+.env
+
+# Large ML models
+models/crop_price_predictor.pkl
+models/PlantDNet.h5
+models/plant_disease_model.pth
+app/models/plant_disease_model.pth
+
+# Large executable
+app/static/images/hwi64_840.exe
+
+# Nested Git repository
+Plant-Disease-Prediction/.git/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Pixi
+.pixi/
+
+# Unrelated projects
+New folder (2) - Copy/
+Plant-Disease-Prediction/

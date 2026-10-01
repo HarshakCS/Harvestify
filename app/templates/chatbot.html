@@ -1,0 +1,485 @@
+<!-- Chatbot Widget -->
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chatbot-header">
+        <div class="chatbot-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="chatbot-title">
+            <h4>Farm Assistant</h4>
+            <p>Ask me about farming, crops, and more!</p>
+        </div>
+        <button class="chatbot-close" id="closeChatbot">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="chatbot-messages" id="chatMessages">
+        <div class="message bot-message">
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <p>Hello! I'm your farming assistant. How can I help you today?</p>
+                <div class="suggested-questions">
+                    <button class="suggestion-btn">Best crops for my soil?</button>
+                    <button class="suggestion-btn">How to prevent pests?</button>
+                    <button class="suggestion-btn">Weather forecast tips</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chatbot-input">
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <input type="text" id="userInput" placeholder="Type your question here..." />
+        <button id="sendButton">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+    
+    <div class="chatbot-toggle" id="chatbotToggle">
+        <i class="fas fa-comments"></i>
+    </div>
+</div>
+
+<!-- Chatbot Styles -->
+<style>
+.chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    transform: translateY(100px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.chatbot-container.visible {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.chatbot-avatar {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    color: #4CAF50;
+    font-size: 20px;
+}
+
+.chatbot-title h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chatbot-title p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.chatbot-close {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.chatbot-close:hover {
+    opacity: 1;
+}
+
+.chatbot-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f5f5f5;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.bot-message .message-avatar {
+    background: #4CAF50;
+    color: white;
+}
+
+.message-content {
+    max-width: 80%;
+}
+
+.message p {
+    margin: 0;
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.user-message .message-content {
+    order: -1;
+    margin-right: 10px;
+}
+
+.user-message p {
+    background: #4CAF50;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.bot-message p {
+    background: white;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 5px;
+}
+
+.suggested-questions {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.suggestion-btn {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 15px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #2e7d32;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suggestion-btn:hover {
+    background: #c8e6c9;
+}
+
+.chatbot-input {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+    background: white;
+    position: relative;
+}
+
+.chatbot-input input {
+    width: 100%;
+    padding: 10px 50px 10px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.chatbot-input input:focus {
+    border-color: #4CAF50;
+}
+
+.chatbot-input button {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #4CAF50;
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.chatbot-input button:hover {
+    color: #388e3c;
+}
+
+.typing-indicator {
+    position: absolute;
+    left: 25px;
+    top: -25px;
+    display: none;
+    align-items: center;
+    gap: 5px;
+    background: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.typing-indicator.visible {
+    display: flex;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+}
+
+.chatbot-toggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 999;
+    transition: all 0.3s ease;
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .chatbot-container {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+    
+    .chatbot-toggle {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+</style>
+
+<!-- Chatbot JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatbotContainer = document.getElementById('chatbotContainer');
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const closeChatbot = document.getElementById('closeChatbot');
+    const typingIndicator = document.getElementById('typingIndicator');
+    
+    let isChatOpen = false;
+    
+    // Toggle chat visibility
+    function toggleChat() {
+        isChatOpen = !isChatOpen;
+        if (isChatOpen) {
+            chatbotContainer.classList.add('visible');
+            chatbotToggle.style.opacity = '0';
+            chatbotToggle.style.visibility = 'hidden';
+            setTimeout(() => userInput.focus(), 300);
+        } else {
+            chatbotContainer.classList.remove('visible');
+            chatbotToggle.style.opacity = '1';
+            chatbotToggle.style.visibility = 'visible';
+        }
+    }
+    
+    // Add event listeners
+    chatbotToggle.addEventListener('click', toggleChat);
+    closeChatbot.addEventListener('click', toggleChat);
+    
+    // Handle send message
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        userInput.value = '';
+        
+        // Show typing indicator
+        typingIndicator.classList.add('visible');
+        
+        // Send message to backend
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                system_prompt: 'You are a helpful AI assistant for farmers. Provide concise and accurate information about farming, crops, weather, and related agricultural topics. Keep responses under 100 words.'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide typing indicator
+            typingIndicator.classList.remove('visible');
+            
+            if (data.error) {
+                addMessage('Sorry, I encountered an error. Please try again later.', 'bot');
+                console.error('Chat API error:', data.error);
+                return;
+            }
+            
+            // Add bot response to chat
+            addMessage(data.response, 'bot');
+        })
+        .catch(error => {
+            typingIndicator.classList.remove('visible');
+            addMessage('Sorry, I am having trouble connecting to the server.', 'bot');
+            console.error('Error:', error);
+        });
+    }
+    
+    // Add message to chat
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        const textP = document.createElement('p');
+        textP.textContent = text;
+        
+        contentDiv.appendChild(textP);
+        
+        // Add suggested questions for bot messages
+        if (sender === 'bot' && text.includes('Hello')) {
+            const suggestionsDiv = document.createElement('div');
+            suggestionsDiv.className = 'suggested-questions';
+            
+            const suggestions = [
+                'Best crops for my soil?',
+                'How to prevent pests?',
+                'Weather forecast tips'
+            ];
+            
+            suggestions.forEach(suggestion => {
+                const btn = document.createElement('button');
+                btn.className = 'suggestion-btn';
+                btn.textContent = suggestion;
+                btn.addEventListener('click', () => {
+                    userInput.value = suggestion;
+                    sendMessage();
+                });
+                suggestionsDiv.appendChild(btn);
+            });
+            
+            contentDiv.appendChild(suggestionsDiv);
+        }
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentDiv);
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Handle send button click
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Handle Enter key
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Handle suggestion button clicks
+    document.querySelectorAll('.suggestion-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            userInput.value = this.textContent;
+            sendMessage();
+        });
+    });
+});
+</script>

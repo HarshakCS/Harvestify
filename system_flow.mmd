@@ -1,0 +1,53 @@
+```mermaid
+graph TD
+    A[User Interface] --> B[Authentication Module]
+    B --> C[Main Dashboard]
+    C --> D[Crop Recommendation]
+    C --> E[Fertilizer Suggestion]
+    C --> F[Price Prediction]
+    C --> G[Disease Detection]
+    
+    D --> H[Input: Soil & Weather Data]
+    E --> I[Input: Soil & Crop Data]
+    F --> J[Input: Commodity & Location]
+    G --> K[Input: Leaf Image]
+    
+    H --> L[ML Model: Random Forest]
+    I --> M[ML Model: Decision Tree]
+    J --> N[ML Model: Random Forest Regressor]
+    K --> O[DL Model: ResNet9]
+    
+    L --> P[Output: Recommended Crops]
+    M --> Q[Output: Fertilizer Suggestions]
+    N --> R[Output: Price Predictions]
+    O --> S[Output: Disease Diagnosis]
+    
+    P --> T[Display Results]
+    Q --> T
+    R --> T
+    S --> T
+```
+
+## How to Use This Diagram
+
+1. **With Mermaid Support**:
+   - Open this file in any Markdown viewer that supports Mermaid.js (like GitHub, GitLab, or VS Code with Mermaid extension)
+   - The diagram will render automatically
+
+2. **With Mermaid Live Editor**:
+   - Copy the content between the triple backticks
+   - Go to [Mermaid Live Editor](https://mermaid.live/)
+   - Paste the content and see the rendered diagram
+
+## System Flow Description
+
+1. **Authentication**: Users first authenticate through the login/signup interface
+2. **Dashboard**: After authentication, users access the main dashboard
+3. **Feature Selection**: Users can choose from four main features:
+   - Crop Recommendation
+   - Fertilizer Suggestion
+   - Price Prediction
+   - Disease Detection
+4. **Data Input**: Each feature collects specific input data from the user
+5. **Processing**: Input data is processed by the respective machine learning models
+6. **Results**: The system displays the results in a user-friendly format

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvestify - Crop Recommendation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: rgb(206, 206, 228);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            width: 350px;
+            margin: 0 auto;
+            color: black;
+            border-radius: 25px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 rounded">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('routes.home') }}">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Harvestify Logo" style="height: 40px;">
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="form-container">
+                    <h2 class="text-center mb-4">Crop Recommendation</h2>
+                    
+                    <form id="cropForm" method="POST" action="{{ url_for('routes.crop') }}">
+                        <div class="form-group">
+                            <label for="nitrogen"><b>Nitrogen (N)</b></label>
+                            <input type="number" class="form-control" id="nitrogen" name="nitrogen" required 
+                                   placeholder="Enter nitrogen value" min="0" max="140"
+                                   value="{{ nitrogen if nitrogen is defined else '' }}">
+                            <div class="error-message" id="nitrogen-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phosphorous"><b>Phosphorous (P)</b></label>
+                            <input type="number" class="form-control" id="phosphorous" name="phosphorous" required
+                                   placeholder="Enter phosphorous value" min="5" max="145"
+                                   value="{{ phosphorous if phosphorous is defined else '' }}">
+                            <div class="error-message" id="phosphorous-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pottasium"><b>Potassium (K)</b></label>
+                            <input type="number" class="form-control" id="pottasium" name="pottasium" required
+                                   placeholder="Enter potassium value" min="5" max="205"
+                                   value="{{ pottasium if pottasium is defined else '' }}">
+                            <div class="error-message" id="pottasium-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ph"><b>pH Level</b></label>
+                            <input type="number" step="0.1" class="form-control" id="ph" name="ph" required
+                                   placeholder="Enter pH value" min="3.5" max="9.5"
+                                   value="{{ ph if ph is defined else '' }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="rainfall"><b>Rainfall (mm)</b></label>
+                            <input type="number" step="0.1" class="form-control" id="rainfall" name="rainfall" required
+                                   placeholder="Enter rainfall in mm" min="0" max="1000"
+                                   value="{{ rainfall if rainfall is defined else '' }}">
+                            <div class="error-message" id="rainfall-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sts"><b>State</b></label>
+                            <select class="form-control" id="sts" name="sts" required 
+                                   onchange="print_city('state', this.selectedIndex);">
+                                <option value="">Select State</option>
+                                {% if sts is defined and sts %}
+                                <option value="{{ sts }}" selected style="display:none;">{{ sts }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="state"><b>City</b></label>
+                            <select class="form-control" id="state" name="city" required>
+                                <option value="">Select City</option>
+                                {% if city is defined and city %}
+                                <option value="{{ city }}" selected style="display:none;">{{ city }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-seedling me-2"></i>Get Recommendation
+                        </button>
+                    </form>
+                    
+                    {% if prediction is defined %}
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h4 class="text-center mb-3"><i class="fas fa-seedling me-2"></i>Recommended Crop</h4>
+                        <div class="alert alert-success text-center">
+                            <h3 class="mb-0">{{ prediction }}</h3>
+                        </div>
+                        <div class="mt-3 text-muted text-center">
+                            <small>Based on your soil conditions and weather data</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if error is defined and error %}
+                    <div class="mt-4">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Include your existing JavaScript for cities -->
+    <script src="{{ url_for('static', filename='scripts/cities.js') }}"></script>
+    
+    <script>
+        // Store the selected city from the form submission
+        const selectedCity = "{{ city if city is defined else '' }}";
+        const selectedState = "{{ sts if sts is defined else '' }}";
+
+        // Initialize cities dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the state dropdown
+            print_state('sts');
+            
+            // After a short delay, set the selected state and trigger city loading
+            setTimeout(function() {
+                if (selectedState) {
+                    const stateSelect = document.getElementById('sts');
+                    for (let i = 0; i < stateSelect.options.length; i++) {
+                        if (stateSelect.options[i].value === selectedState) {
+                            stateSelect.selectedIndex = i;
+                            // Trigger the city loading
+                            print_city('state', i);
+                            break;
+                        }
+                    }
+                }
+                
+                // After cities are loaded, set the selected city
+                setTimeout(function() {
+                    if (selectedCity) {
+                        const citySelect = document.getElementById('state');
+                        for (let i = 0; i < citySelect.options.length; i++) {
+                            if (citySelect.options[i].value === selectedCity) {
+                                citySelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }, 100);
+            }, 100);
+            
+            // Form validation
+            const form = document.getElementById('cropForm');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!validateForm()) {
+                        event.preventDefault();
+                    }
+                });
+                
+                // Add input validation
+                const inputs = form.querySelectorAll('input[type="number"]');
+                inputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        validateInput(this);
+                    });
+                });
+            }
+        });
+        
+        function validateInput(input) {
+            if (!input) return false;
+            
+            const errorElement = document.getElementById(`${input.id}-error`);
+            if (!errorElement) return true;
+            
+            const min = parseFloat(input.min);
+            const max = parseFloat(input.max);
+            const value = parseFloat(input.value);
+            
+            if (input.value && isNaN(value)) {
+                errorElement.textContent = 'Please enter a valid number';
+                errorElement.style.display = 'block';
+                return false;
+            }
+            
+            if (input.value && (value < min || value > max)) {
+                errorElement.textContent = `Value must be between ${min} and ${max}`;
+                errorElement.style.display = 'block';
+                return false;
+            }
+            
+            errorElement.style.display = 'none';
+            return true;
+        }
+        
+        function validateForm() {
+            let isValid = true;
+            const form = document.getElementById('cropForm');
+            if (!form) return false;
+            
+            const inputs = form.querySelectorAll('input[type="number"], select[required]');
+            
+            inputs.forEach(input => {
+                if (input.type === 'number') {
+                    if (!validateInput(input)) {
+                        isValid = false;
+                    }
+                } else if (input.type === 'select-one' && input.required) {
+                    if (!input.value) {
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'error-message';
+                        errorElement.textContent = 'This field is required';
+                        errorElement.id = `${input.id}-error`;
+                        
+                        const existingError = document.getElementById(`${input.id}-error`);
+                        if (!existingError) {
+                            input.after(errorElement);
+                        }
+                        
+                        isValid = false;
+                    }
+                }
+            });
+            
+            return isValid;
+        }
+    </script>
+</body>
+</html>

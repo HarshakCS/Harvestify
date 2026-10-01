@@ -1,0 +1,26 @@
+# Core Data Science & ML Libraries
+numpy
+pandas
+scikit-learn
+
+# Web Framework
+Flask
+gunicorn
+markupsafe
+
+# Deep Learning (Platform Agnostic)
+torch
+torchvision
+torchaudio
+
+# Image Processing
+Pillow
+
+# HTTP Requests & API
+requests
+
+# Model Persistence
+joblib
+
+# Additional Utilities
+python-dotenv

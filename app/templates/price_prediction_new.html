@@ -1,0 +1,342 @@
+{% extends 'layout.html' %}
+
+{% block title %}Crop Price Prediction - Harvestify{% endblock %}
+
+{% block body %}
+{{ super() }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Crop Price Prediction</h4>
+                </div>
+                <div class="card-body">
+                    <form id="pricePredictionForm" method="POST" enctype="multipart/form-data">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="state">State</label>
+                                    <select class="form-control" id="state" name="state" required>
+                                        <option value="">Select State</option>
+                                        {% for state in states %}
+                                        <option value="{{ state }}">{{ state }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="district">District</label>
+                                    <select class="form-control" id="district" name="district" required>
+                                        <option value="">Select District</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="market">Market</label>
+                                    <select class="form-control" id="market" name="market" required>
+                                        <option value="">Select Market</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="commodity">Commodity</label>
+                                    <select class="form-control" id="commodity" name="commodity" required>
+                                        <option value="">Select Commodity</option>
+                                        {% for commodity in commodities %}
+                                        <option value="{{ commodity }}">{{ commodity }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="variety">Variety</label>
+                                    <input type="text" class="form-control" id="variety" name="variety" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="grade">Grade</label>
+                                    <select class="form-control" id="grade" name="grade" required>
+                                        <option value="">Select Grade</option>
+                                        <option value="FAQ">FAQ</option>
+                                        <option value="Grade A">Grade A</option>
+                                        <option value="Grade B">Grade B</option>
+                                        <option value="Grade C">Grade C</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="arrival_date">Expected Arrival Date</label>
+                                    <input type="date" class="form-control" id="arrival_date" name="arrival_date" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-chart-line me-2"></i>Predict Price
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Prediction Result -->
+                    <div id="predictionResult" class="mt-4" style="display: none;">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Price Prediction Result</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                                        <img src="{{ url_for('static', filename='images/s5.png') }}" 
+                                             alt="Price Prediction" 
+                                             class="img-fluid rounded"
+                                             style="max-height: 250px;">
+                                        <div class="mt-3">
+                                            <h4 class="text-success">
+                                                <strong>Predicted Price:</strong>
+                                                <div id="resultPrice" class="display-4 text-primary mt-2"></div>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">Commodity</h6>
+                                                    <p id="resultCommodity" class="h5"></p>
+                                                </div>
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">Market</h6>
+                                                    <p id="resultMarket"></p>
+                                                </div>
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">District</h6>
+                                                    <p id="resultDistrict"></p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">State</h6>
+                                                    <p id="resultState"></p>
+                                                </div>
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">Arrival Date</h6>
+                                                    <p id="resultDate"></p>
+                                                </div>
+                                                <div class="info-item mb-3">
+                                                    <h6 class="text-muted mb-1">Variety & Grade</h6>
+                                                    <p id="resultVariety"></p>
+                                                    <p id="resultGrade" class="badge bg-info"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-info mt-3 mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            This is a predicted price based on current market trends and historical data. 
+                                            Actual prices may vary.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Set the base URL for API requests - use the current hostname and port
+    const API_BASE_URL = window.location.origin;  // This will be http://10.125.158.139:5001 or whatever the current host is
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#arrival_date').attr('min', today);
+
+    // Load states
+    fetch(`${API_BASE_URL}/api/get-states`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const stateSelect = $('#state');
+                stateSelect.empty().append('<option value="">Select State</option>');
+                data.states.forEach(state => {
+                    stateSelect.append(`<option value="${state}">${state}</option>`);
+                });
+            }
+        });
+    // Load districts when state changes
+    $('#state').change(function() {
+        const state = $(this).val();
+        console.log('State changed to:', state);
+        
+        if (state) {
+            const url = `${API_BASE_URL}/api/get-districts?state=${encodeURIComponent(state)}`;
+            console.log('Fetching districts from:', url);
+            
+            console.log('Making fetch request to:', url);
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'  // Include cookies if any
+            })
+            .then(response => {
+                console.log('Received response, status:', response.status);
+                if (!response.ok) {
+                    // Try to get the response text for more detailed error
+                    return response.text().then(text => {
+                        console.error('Error response text:', text);
+                        throw new Error(`HTTP error! status: ${response.status}, response: ${text}`);
+                    });
+                }
+                return response.json().catch(error => {
+                    console.error('Error parsing JSON:', error);
+                    throw new Error('Invalid JSON response from server');
+                });
+            })
+            .then(data => {
+                console.log('Districts API response:', data);
+                if (data && data.status === 'success') {
+                    const districtSelect = $('#district');
+                    districtSelect.empty().append('<option value="">Select District</option>');
+                    
+                    if (data.districts && data.districts.length > 0) {
+                        data.districts.forEach(district => {
+                            districtSelect.append(`<option value="${district}">${district}</option>`);
+                        });
+                    } else {
+                        console.warn('No districts found for state:', state);
+                    }
+                        
+                        // Reset market when district changes
+                        $('#market').empty().append('<option value="">Select Market</option>');
+                    } else {
+                        console.error('Error in districts API response:', data.error || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching districts:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack
+                    });
+                    // Show detailed error in console and a user-friendly message
+                    alert(`Failed to load districts. Please check the console for more details. Error: ${error.message}`);
+                });
+        } else {
+            $('#district').empty().append('<option value="">Select District</option>');
+            $('#market').empty().append('<option value="">Select Market</option>');
+        }
+    });
+
+    // Load markets when district changes
+    $('#district').change(function() {
+        const state = $('#state').val();
+        const district = $(this).val();
+        if (state && district) {
+            fetch(`${API_BASE_URL}/api/get-markets?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const marketSelect = $('#market');
+                        marketSelect.empty().append('<option value="">Select Market</option>');
+                        data.markets.forEach(market => {
+                            marketSelect.append(`<option value="${market}">${market}</option>`);
+                        });
+                    }
+                });
+        } else {
+            $('#market').empty().append('<option value="">Select Market</option>');
+        }
+    });
+
+    // Handle form submission
+    $('#pricePredictionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...');
+        
+        // Get form data
+        const formData = {
+            State: $('#state').val(),
+            District: $('#district').val(),
+            Market: $('#market').val(),
+            Commodity: $('#commodity').val(),
+            Variety: $('#variety').val(),
+            Grade: $('#grade').val(),
+            Arrival_Date: $('#arrival_date').val()
+        };
+        
+        // Make prediction request
+        fetch(`${API_BASE_URL}/api/predict-price`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update result display with data from the response
+                const prediction = data.prediction;
+                $('#resultCommodity').text(prediction.commodity);
+                $('#resultMarket').text(prediction.market);
+                $('#resultDistrict').text(prediction.district);
+                $('#resultState').text(prediction.state);
+                $('#resultDate').text(prediction.arrival_date);
+                $('#resultVariety').text(prediction.Variety || prediction.variety);
+                $('#resultGrade').text(prediction.Grade || prediction.grade);
+                $('#resultPrice').text('₹' + prediction.predicted_price.toFixed(2) + ' per ' + (prediction.unit || 'quintal'));
+                
+                // Show result
+                $('#predictionResult').show();
+                
+                // Scroll to result
+                $('html, body').animate({
+                    scrollTop: $('#predictionResult').offset().top - 100
+                }, 500);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while making the prediction. Please try again.');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.prop('disabled', false).html(originalBtnText);
+        });
+    });
+});
+</script>
+{% endblock %}

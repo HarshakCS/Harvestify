@@ -1,0 +1,9 @@
+# Development Dependencies
+pytest
+black
+flake8
+jupyter
+
+# Optional: For GPU support (uncomment if needed)
+# torch --extra-index-url https://download.pytorch.org/whl/cu116
+# torchvision --extra-index-url https://download.pytorch.org/whl/cu116

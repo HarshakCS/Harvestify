@@ -1,0 +1,182 @@
+{% extends 'layout.html' %} 
+
+{% block body %}
+<style>
+  html body {
+    background-color: rgb(206, 206, 228);
+  }
+  .recommendation-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  .recommendation-item {
+    margin: 10px 0;
+    padding: 10px;
+    border-left: 4px solid #28a745;
+    background-color: white;
+    border-radius: 0 5px 5px 0;
+  }
+</style>
+
+<!--Form Section-->
+<br /><br />
+<h2 style="text-align: center; margin: 0px; color: black">
+  <b>Get informed advice on fertilizer based on soil</b>
+</h2>
+<br />
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} text-center" style="max-width: 500px; margin: 0 auto;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-body">
+  <form method="POST" action="{{ url_for('routes.fertilizer_recommendation') }}">
+    <div class="form-group">
+      <label for="nitrogen" style="font-size: 17px"><b>Nitrogen</b></label>
+      <input
+        type="number"
+        class="form-control"
+        id="nitrogen"
+        name="nitrogen"
+        placeholder="Enter the value (example:50)"
+        style="font-weight: bold"
+        value="{{ nitrogen if nitrogen is defined else '' }}"
+        required
+      />
+    </div>
+    <div class="form-group">
+      <label for="phosphorous" style="font-size: 17px"
+        ><b>Phosphorous</b></label
+      >
+      <input
+        type="number"
+        class="form-control"
+        id="phosphorous"
+        name="phosphorous"
+        placeholder="Enter the value (example:50)"
+        style="font-weight: bold"
+        value="{{ phosphorous if phosphorous is defined else '' }}"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="pottasium" style="font-size: 17px"><b>Potassium</b></label>
+      <input
+        type="number"
+        class="form-control"
+        id="pottasium"
+        name="pottasium"
+        placeholder="Enter the value (example:50)"
+        style="font-weight: bold"
+        value="{{ pottasium if pottasium is defined else '' }}"
+        required
+      />
+    </div>
+    <!-- <div class="form-group">
+      <label for="ph" style="font-size: 17px"><b>ph level</b></label>
+      <input
+        type="text"
+        class="form-control"
+        id="ph"
+        name="ph"
+        placeholder="Enter the value"
+        style="font-weight: bold"
+        required
+      />
+    </div> -->
+    <div class="form-group">
+      <label for="cropname" style="font-size: 17px"
+        ><b>Crop you want to grow</b></label
+      >
+      <select
+        name="cropname"
+        class="form-control"
+        id="cropname"
+        placeholder="Select a crop"
+        style="font-weight: bold"
+        required
+      >
+        <option value="" {% if not cropname %}selected{% endif %}>Select crop</option>
+        <option value="rice" {% if cropname == 'rice' %}selected{% endif %}>Rice</option>
+        <option value="maize" {% if cropname == 'maize' %}selected{% endif %}>Maize</option>
+        <option value="chickpea" {% if cropname == 'chickpea' %}selected{% endif %}>Chickpea</option>
+        <option value="kidneybeans" {% if cropname == 'kidneybeans' %}selected{% endif %}>Kidney Beans</option>
+        <option value="pigeonpeas" {% if cropname == 'pigeonpeas' %}selected{% endif %}>Pigeon Peas</option>
+        <option value="mothbeans" {% if cropname == 'mothbeans' %}selected{% endif %}>Moth Beans</option>
+        <option value="mungbean" {% if cropname == 'mungbean' %}selected{% endif %}>Mung Bean</option>
+        <option value="blackgram" {% if cropname == 'blackgram' %}selected{% endif %}>Black Gram</option>
+        <option value="lentil" {% if cropname == 'lentil' %}selected{% endif %}>Lentil</option>
+        <option value="pomegranate" {% if cropname == 'pomegranate' %}selected{% endif %}>Pomegranate</option>
+        <option value="banana" {% if cropname == 'banana' %}selected{% endif %}>Banana</option>
+        <option value="mango" {% if cropname == 'mango' %}selected{% endif %}>Mango</option>
+        <option value="grapes" {% if cropname == 'grapes' %}selected{% endif %}>Grapes</option>
+        <option value="watermelon" {% if cropname == 'watermelon' %}selected{% endif %}>Watermelon</option>
+        <option value="muskmelon" {% if cropname == 'muskmelon' %}selected{% endif %}>Muskmelon</option>
+        <option value="apple" {% if cropname == 'apple' %}selected{% endif %}>Apple</option>
+        <option value="orange" {% if cropname == 'orange' %}selected{% endif %}>Orange</option>
+        <option value="papaya" {% if cropname == 'papaya' %}selected{% endif %}>Papaya</option>
+        <option value="coconut" {% if cropname == 'coconut' %}selected{% endif %}>Coconut</option>
+        <option value="cotton" {% if cropname == 'cotton' %}selected{% endif %}>Cotton</option>
+        <option value="jute" {% if cropname == 'jute' %}selected{% endif %}>Jute</option>
+        <option value="coffee" {% if cropname == 'coffee' %}selected{% endif %}>Coffee</option>
+      </select>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <button
+        type="submit"
+        class="btn btn-info"
+        style="
+          color: black;
+          font-weight: bold;
+          width: 130px;
+          height: 50px;
+          border-radius: 12px;
+          font-size: 21px;
+        "
+      >
+        Predict
+      </button>
+    </div>
+    
+    <!-- Recommendations Section -->
+    {% if recommendations is defined %}
+    <div class="recommendation-card mt-4">
+      <h4 class="text-center mb-3">Fertilizer Recommendations</h4>
+      {% for rec in recommendations %}
+        <div class="recommendation-item">
+          <i class="fas fa-seedling me-2"></i>{{ rec }}
+        </div>
+      {% endfor %}
+      
+      {% if cropname %}
+        <div class="mt-3 text-center">
+          <small class="text-muted">
+            <i class="fas fa-info-circle"></i> Recommendations for growing {{ cropname }}
+          </small>
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+{% endblock %}
