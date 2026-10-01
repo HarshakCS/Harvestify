@@ -5,6 +5,7 @@ Direct integration with the working Plant-Disease-Prediction app
 import os
 import sys
 import numpy as np
+from huggingface_hub import hf_hub_download
 
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +24,10 @@ class PlantDiseasePredictor:
     """Plant disease prediction using PlantDNet.h5 model with PyTorch fallback"""
     
     def __init__(self):
-        self.model_path = os.path.join(project_root, 'Plant-Disease-Prediction', 'PlantDNet.h5')
+        # self.model_path = os.path.join(project_root, 'Plant-Disease-Prediction', 'PlantDNet.h5')
+        self.model_path = hf_hub_download(repo_id="HARSHAKCS/harvestify-models",
+        filename="PlantDNet.h5"
+        )
         self.disease_classes = PLANTDNET_DISEASE_CLASSES
         self.model_available = self.check_model_availability()
         self.model = None

@@ -63,13 +63,21 @@ disease_classes = [
     'Tomato___healthy'
 ]
 
+# import os
+# import sys
+# import traceback
 import os
 import sys
 import traceback
+from huggingface_hub import hf_hub_download
 
 # Get the absolute path to the model file
 current_dir = os.path.dirname(os.path.abspath(__file__))
-disease_model_path = os.path.join(current_dir, 'models', 'plant_disease_model.pth')
+disease_model_path = hf_hub_download(
+    repo_id="HARSHAKCS/harvestify-models",
+    filename="plant_disease_model.pth"
+)
+# disease_model_path = os.path.join(current_dir, 'models', 'plant_disease_model.pth')
 
 try:
     print(f"Loading model from: {disease_model_path}")
@@ -146,7 +154,8 @@ try:
         print(f"Could not list models directory: {str(e)}")
     
     # Try to load the model
-    model_filename = 'RandomForest_new.pkl'
+    # model_filename = 'RandomForest_new.pkl'
+    model_filename = 'RandomForest.pkl'
     crop_recommendation_model_path = os.path.join(model_dir, model_filename)
     
     print(f"\nAttempting to load model from: {crop_recommendation_model_path}")
@@ -553,7 +562,8 @@ def fert_recommend():
     K = int(request.form['pottasium'])
     # ph = float(request.form['ph'])
 
-    df = pd.read_csv('C:/Users/DELL/Desktop/Harvestify/Data-raw/FertilizerData.csv')
+    df = pd.read_csv(os.path.join(current_dir, '..', 'Data-processed', 'fertilizer.csv'))
+    # df = pd.read_csv('C:/Users/DELL/Desktop/Harvestify/Data-raw/FertilizerData.csv')
 
     nr = df[df['Crop'] == crop_name]['N'].iloc[0]
     pr = df[df['Crop'] == crop_name]['P'].iloc[0]

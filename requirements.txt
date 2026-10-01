@@ -24,3 +24,6 @@ joblib
 
 # Additional Utilities
 python-dotenv
+huggingface_hub
+tensorflow
+flask-cors

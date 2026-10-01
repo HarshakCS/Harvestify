@@ -3,6 +3,8 @@ import numpy as np
 import joblib
 from datetime import datetime
 import os
+from huggingface_hub import hf_hub_download
+# import os
 
 class CropPricePredictor:
     def __init__(self, model_dir='models'):
@@ -19,7 +21,8 @@ class CropPricePredictor:
                 raise FileNotFoundError(f"Model directory not found: {os.path.abspath(model_dir)}")
                 
             # Check for required files
-            required_files = ['crop_price_predictor.pkl', 'label_encoders.pkl', 'scaler.pkl']
+            # required_files = ['crop_price_predictor.pkl', 'label_encoders.pkl', 'scaler.pkl']
+            required_files = ['label_encoders.pkl', 'scaler.pkl']
             missing_files = [f for f in required_files if not os.path.exists(os.path.join(model_dir, f))]
             
             if missing_files:
@@ -31,7 +34,12 @@ class CropPricePredictor:
             
             # Load model and preprocessing objects
             print(f"Loading model from: {os.path.abspath(model_dir)}")
-            self.model = joblib.load(os.path.join(model_dir, 'crop_price_predictor.pkl'))
+            # self.model = joblib.load(os.path.join(model_dir, 'crop_price_predictor.pkl'))
+            model_path = hf_hub_download(repo_id="HARSHAKCS/harvestify-models",
+            filename="crop_price_predictor.pkl"
+            )
+
+            self.model = joblib.load(model_path)
             self.label_encoders = joblib.load(os.path.join(model_dir, 'label_encoders.pkl'))
             self.scaler = joblib.load(os.path.join(model_dir, 'scaler.pkl'))
             
@@ -214,4 +222,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {str(e)}")
         raise
-    example_usage()
+
